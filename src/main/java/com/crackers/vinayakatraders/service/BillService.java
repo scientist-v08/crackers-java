@@ -92,7 +92,7 @@ public class BillService {
             // Right - Terms
             PdfPCell rightCell = new PdfPCell();
             rightCell.setBorder(Rectangle.NO_BORDER);
-            rightCell.addElement(new Paragraph("Terms: Quality not guaranteed by retailer. Contact brand for complaints.", normalFont));
+            rightCell.addElement(new Paragraph("T&C: Quality not guaranteed by retailer. Contact brand for complaints.", normalFont));
             headerTable.addCell(rightCell);
 
             document.add(headerTable);
