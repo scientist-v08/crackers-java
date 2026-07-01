@@ -73,10 +73,10 @@ public class AuthService {
 
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.Email())
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+                .orElseThrow(() -> new RuntimeException("Invalid credentials. Email doesn't exist."));
 
         if (!passwordEncoder.matches(request.Password(), user.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new RuntimeException("Invalid credentials. Incorrect password.");
         }
 
         if (!user.getEnabled()) {
