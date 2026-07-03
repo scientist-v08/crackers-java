@@ -45,23 +45,22 @@ public class BillService {
             );
         }
 
-        // Finalized Amount must be within ±10% of Grand Total
+        // Finalized Amount must be within -10% of Grand Total
         if (req.finalizedAmt() != null && req.finalizedAmt() > 0) {
             int minAllowed = (int) Math.ceil(calculatedGrandTotal * 0.9);
-            int maxAllowed = (int) Math.floor(calculatedGrandTotal * 1.1);
 
-            if (req.finalizedAmt() < minAllowed || req.finalizedAmt() > maxAllowed) {
+            if (req.finalizedAmt() < minAllowed) {
                 throw new IllegalArgumentException(
-                        String.format("Finalized amount must be between %d and %d (within ±10%% of Grand Total)", minAllowed, maxAllowed)
+                        String.format("Finalized amount must be greater than %d (above -10%% of Grand Total)", minAllowed)
                 );
             }
         }
     }
 
     private byte[] createPdf(PreviewBillRequest bill) {
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
             Document document = new Document(PageSize.A4);
-            PdfWriter.getInstance(document, baos);
+            PdfWriter.getInstance(document, byteArrayOutputStream);
             document.open();
 
             // Fonts
@@ -104,7 +103,7 @@ public class BillService {
             table.setWidths(new float[]{8, 32, 12, 10, 12, 14, 12});
 
             // Headers
-            String[] headers = {"SlNo", "Item", "MRP/Net", "Quantity", "Discount", "SubTotal w/o Disc", "SubTotal"};
+            String[] headers = {"SlNo", "Item", "MRP/Net", "Quantity", "SubTotal w/o Disc", "Discount", "SubTotal"};
             for (String h : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(h, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -126,13 +125,14 @@ public class BillService {
                 // Quantity
                 table.addCell(new PdfPCell(new Phrase(String.valueOf(item.quantity()), normalFont)));
 
-                // Discount
-                table.addCell(new PdfPCell(new Phrase(item.discount() != null ? item.discount() : "", normalFont)));
-
                 // SubTotal without discount = MRP * Qty
                 double subNoDisc = (item.mrpOrNet() != null ? item.mrpOrNet() : 0) *
                         (item.quantity() != null ? item.quantity() : 0);
                 table.addCell(new PdfPCell(new Phrase(String.format("%.2f", subNoDisc), normalFont)));
+
+                // Discount
+                table.addCell(new PdfPCell(new Phrase(item.discount() != null ? item.discount() : "", normalFont)));
+
 
                 // SubTotal
                 table.addCell(new PdfPCell(new Phrase(String.valueOf(item.subTotal()), normalFont)));
@@ -155,7 +155,7 @@ public class BillService {
             }
 
             document.close();
-            return baos.toByteArray();
+            return byteArrayOutputStream.toByteArray();
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to generate PDF", e);
