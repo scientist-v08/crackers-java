@@ -5,7 +5,7 @@ spring:
   application:
     name: vinayakatraders
   datasource:
-    url: jdbc:postgresql://localhost:5432/crackersv2?sslmode=disable
+    url: jdbc:postgresql://localhost:5432/crackersv3?sslmode=disable
     username: postgres
     password: Avaali1$
     driver-class-name: org.postgresql.Driver
