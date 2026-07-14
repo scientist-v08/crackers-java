@@ -48,8 +48,8 @@ public class SecurityConfig {
                 16,     // salt length
                 32,     // hash length
                 1,      // parallelism (threads)
-                65536,  // memory cost (in KB) - very important
-                10      // iterations
+                16384,  // memory cost (in KB) - very important
+                3      // iterations
         );
     }
 }
