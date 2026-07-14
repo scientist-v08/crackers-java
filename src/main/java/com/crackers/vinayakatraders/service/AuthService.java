@@ -72,27 +72,23 @@ public class AuthService {
     }
 
     public LoginResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new RuntimeException("Invalid credentials. Email doesn't exist."));
+        List<LoginUserDetailsProjection> details = userRepository.findLoginDetailsByEmail(request.email());
 
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+        if(details.isEmpty()) {
+            throw new RuntimeException("Email ID doesn't exist. Sign up before login.");
+        }
+
+        LoginUserDetailsProjection first = details.getFirst();
+
+        if (!passwordEncoder.matches(request.password(), first.password())) {
             throw new RuntimeException("Invalid credentials. Incorrect password.");
         }
 
-        if (!user.getEnabled()) {
-            throw new RuntimeException("Account disabled");
-        }
+        List<Routes> routes = details.stream()
+                .map(r -> new Routes(r.routeId(), r.route(), r.heading(), r.roleId()))
+                .toList();
 
-        Role role = roleRepository.findById(user.getRoleId())
-                .orElseThrow(() -> new RuntimeException("Role not found"));
-
-        String token = jwtUtil.generateToken(user.getEmail(), role.getName());
-
-        List<Routes> routes = routesRepository.findByRole(user.getRoleId()).stream().toList();
-
-        if (routes.isEmpty()) {
-            throw new RuntimeException("Failed to fetch the routes");
-        }
+        String token = jwtUtil.generateToken(first.email(), first.roleName());
 
         return new LoginResponse(token, routes);
     }
