@@ -65,9 +65,8 @@ public class BillService {
 
             // Fonts
             Font titleFont = new Font(Font.HELVETICA, 16, Font.BOLD);
-            Font boldFont = new Font(Font.HELVETICA, 12, Font.BOLD);
-            Font normalFont = new Font(Font.HELVETICA, 11);
-            Font smallBold = new Font(Font.HELVETICA, 12, Font.BOLD);
+            Font boldFont = new Font(Font.HELVETICA, 10, Font.BOLD);
+            Font normalFont = new Font(Font.HELVETICA, 10);
 
             // Title
             Paragraph title = new Paragraph("Vinayaka Traders", titleFont);
@@ -84,8 +83,8 @@ public class BillService {
             PdfPCell leftCell = new PdfPCell();
             leftCell.setBorder(Rectangle.NO_BORDER);
             leftCell.addElement(new Paragraph("Customer: " + bill.user(), normalFont));
-            leftCell.addElement(new Paragraph("Mobile: " + "NA"));
-            leftCell.addElement(new Paragraph("Bill ID: " + "NA")); // or pass billId
+            leftCell.addElement(new Paragraph("Mobile: " + "NA", normalFont));
+            leftCell.addElement(new Paragraph("Bill ID: " + "NA", normalFont)); // or pass billId
             headerTable.addCell(leftCell);
 
             // Right - Terms
@@ -103,7 +102,7 @@ public class BillService {
             table.setWidths(new float[]{8, 32, 12, 10, 12, 14, 12});
 
             // Headers
-            String[] headers = {"SlNo", "Item", "MRP/Net", "Quantity", "SubTotal w/o Disc", "Discount", "SubTotal"};
+            String[] headers = {"Sl.No", "Item", "MRP/Net", "Quantity", "SubTotal w/o Disc", "Discount", "SubTotal"};
             for (String h : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(h, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -142,14 +141,13 @@ public class BillService {
 
             // Grand Total
             document.add(new Paragraph("\n"));
-            Paragraph grandTotal = new Paragraph("Grand Total: " + bill.grandTotal(), smallBold);
+            Paragraph grandTotal = new Paragraph("Grand Total: " + bill.grandTotal(), boldFont);
             grandTotal.setAlignment(Element.ALIGN_RIGHT);
             document.add(grandTotal);
 
             // Finalized Amount
             if (bill.finalizedAmt() != null && bill.finalizedAmt() > 0) {
-                Paragraph finalized = new Paragraph("Finalized Amount: " + bill.finalizedAmt(),
-                        new Font(Font.HELVETICA, 13, Font.BOLD));
+                Paragraph finalized = new Paragraph("Finalized Amount: " + bill.finalizedAmt(), boldFont);
                 finalized.setAlignment(Element.ALIGN_RIGHT);
                 document.add(finalized);
             }
