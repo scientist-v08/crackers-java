@@ -9,6 +9,8 @@ import com.crackers.vinayakatraders.repository.RoutesRepository;
 import com.crackers.vinayakatraders.repository.UserRepository;
 import com.crackers.vinayakatraders.security.JwtUtil;
 import lombok.AllArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -75,13 +77,13 @@ public class AuthService {
         List<LoginUserDetailsProjection> details = userRepository.findLoginDetailsByEmail(request.email());
 
         if(details.isEmpty()) {
-            throw new RuntimeException("Email ID doesn't exist. Sign up before login.");
+            throw new UsernameNotFoundException("Email ID doesn't exist. Sign up before login.");
         }
 
         LoginUserDetailsProjection first = details.getFirst();
 
         if (!passwordEncoder.matches(request.password(), first.password())) {
-            throw new RuntimeException("Invalid credentials. Incorrect password.");
+            throw new BadCredentialsException("Invalid credentials. Incorrect password.");
         }
 
         List<Routes> routes = details.stream()
