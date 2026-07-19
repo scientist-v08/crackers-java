@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public record BillItemsRequest(
         Integer slNo,
-        @NotBlank String item,
+        @NotBlank(message = "Item is a required field") String item,
         Integer mrpOrNet,
         Integer quantity,
         String discount,

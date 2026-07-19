@@ -92,6 +92,8 @@ public class AuthService {
 
         String token = jwtUtil.generateToken(first.email(), first.roleName());
 
-        return new LoginResponse(token, routes);
+        boolean isAdmin = first.roleName().equals("ROLE_ADMIN");
+
+        return new LoginResponse(token, routes, isAdmin);
     }
 }
