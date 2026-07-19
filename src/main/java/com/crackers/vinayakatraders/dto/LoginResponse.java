@@ -6,6 +6,7 @@ import java.util.List;
 
 public record LoginResponse(
         String access_token,
-        List<Routes> routes
+        List<Routes> routes,
+        boolean isAdmin
 ) {
 }
