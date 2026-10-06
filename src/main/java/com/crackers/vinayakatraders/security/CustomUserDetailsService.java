@@ -1,8 +1,6 @@
 package com.crackers.vinayakatraders.security;
 
 import com.crackers.vinayakatraders.dto.LoginUserDetailsProjection;
-import com.crackers.vinayakatraders.entity.Role;
-import com.crackers.vinayakatraders.repository.RoleRepository;
 import com.crackers.vinayakatraders.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.*;

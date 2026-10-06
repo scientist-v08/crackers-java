@@ -14,10 +14,10 @@ import lombok.NoArgsConstructor;
 @Builder
 public class Routes {
     @Id
-    @SequenceGenerator(name = "routes_id_seq", sequenceName = "routes_id_seq", allocationSize = 1)
+    @SequenceGenerator(name = "routes_id_seq", sequenceName = "routes_id_seq", allocationSize = 50)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "routes_id_seq")
     @Column(name = "id", updatable = false)
-    private Long id;
+    private Short id;
 
     @Column(name = "route", nullable = false)
     private String route;
@@ -25,6 +25,7 @@ public class Routes {
     @Column(name = "heading", nullable = false)
     private String heading;
 
-    @Column(name = "role", nullable = false)
-    private Long role;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
 }

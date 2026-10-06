@@ -2,10 +2,8 @@ package com.crackers.vinayakatraders.service;
 
 import com.crackers.vinayakatraders.dto.*;
 import com.crackers.vinayakatraders.entity.Role;
-import com.crackers.vinayakatraders.entity.Routes;
 import com.crackers.vinayakatraders.entity.User;
 import com.crackers.vinayakatraders.repository.RoleRepository;
-import com.crackers.vinayakatraders.repository.RoutesRepository;
 import com.crackers.vinayakatraders.repository.UserRepository;
 import com.crackers.vinayakatraders.security.JwtUtil;
 import lombok.AllArgsConstructor;
@@ -23,21 +21,20 @@ public class AuthService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final RoutesRepository routesRepository;
 
     public JwtResponse registerUser(SignupRequest request) {
         if (userRepository.existsByEmail(request.email())) {
             throw new RuntimeException("Email already exists");
         }
 
-        Role userRole = roleRepository.findByName("ROLE_USER")
-                .orElseThrow(() -> new RuntimeException("Default role not found"));
+        // ROLE_USER has id = 1
+        Role userRole = roleRepository.getReferenceById((short) 1);
 
         User user = User.builder()
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
                 .fullName(request.fullName())
-                .roleId(userRole.getId())
+                .role(userRole)
                 .enabled(true)
                 .build();
 
@@ -54,14 +51,13 @@ public class AuthService {
             throw new RuntimeException("Email already exists");
         }
 
-        Role adminRole = roleRepository.findByName("ROLE_ADMIN")
-                .orElseThrow(() -> new RuntimeException("Admin role not found"));
+        Role adminRole = roleRepository.getReferenceById((short) 2);
 
         User admin = User.builder()
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
                 .fullName(request.fullName())
-                .roleId(adminRole.getId())
+                .role(adminRole)
                 .enabled(true)
                 .build();
 
@@ -86,8 +82,8 @@ public class AuthService {
             throw new BadCredentialsException("Invalid credentials. Incorrect password.");
         }
 
-        List<Routes> routes = details.stream()
-                .map(r -> new Routes(r.routeId(), r.route(), r.heading(), r.roleId()))
+        List<RouteResponse> routes = details.stream()
+                .map(r -> new RouteResponse(r.routeId(), r.route(), r.heading()))
                 .toList();
 
         String token = jwtUtil.generateToken(first.email(), first.roleName());
