@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @Builder
 public class User {
     @Id
-    @SequenceGenerator(name = "users_id_seq", sequenceName = "users_id_seq", allocationSize = 1)
+    @SequenceGenerator(name = "users_id_seq", sequenceName = "users_id_seq", allocationSize = 50)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_id_seq")
     @Column(name = "id", updatable = false)
     private Long id;
@@ -32,8 +32,9 @@ public class User {
     @Column(name = "full_name")
     private String fullName;
 
-    @Column(name = "role_id", nullable = false)
-    private Long roleId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
 
     @Column(name = "enabled", nullable = false)
     @Builder.Default

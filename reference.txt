@@ -1,0 +1,29 @@
+1. For storing data types always use columns that store the least amount of space. This way we can very easily scale the program. For example:-
+    i) Suppose we have a enum then use enum.ordinance and thereby it'll get stored as smallint in the DB.
+    ii) If the number of rows in a column is known and small then use types like smallint as done in StackOverflow.
+    iii) For storing IPv4 in the DB use inet (In legacy hibernate versions less then 6 use the code given in hypersistence)
+2. If you ever want to use UUIDs in Java as a primary key then use TSIDs instead of UUIDs or utmost allow the use of UUID v7.
+3. If we are not using auto GeneratedValue then JPA automatically, calls Select and only then does it call insert. To avoid such cases use the hypersistence util lib of vlad.
+4. When creating IDs always use GenerationType.SEQUENCE instead of GenerationType.IDENTITY when using PostgreSQL DB.
+    Suppose we create a tableName_sequence with increment by 1 start with 1 and cache 5 with the help of flyway
+    Then we can just do @Id and @BatchSequence(name = "tableName_sequence", fetchSize = 5) for the ID field in the model definition.
+    The other way is using only the Java Spring-boot app for table generation. In those situations we use,
+    @GeneratedValue(generator = "post_sequence", strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name = "post_sequence", allocationSize = 10)
+5. When we use @ManyToOne, and we want to add to the child table we will have a reference to the parent table from the child table.
+In those situations when we make the post request of the child table use parentRepository.getReferenceById instead of parentRepository.findById
+6. When we use @ManyToOne use FetchType.LAZY and also use @JoinColumn with a name. Most importantly this is a child side mapping and is
+easy so prefer this.
+7. Bidirectional one-to-many: If we are using @OneToMany use it in the parent table and ensure to use orphan removal as true in the
+options of @OneToMany as well. This ensures that if we remove the parent the child also gets removed. In case we have such a requirement
+then do this. This method assumes we are using @ManyToOne in the child table. Use List instead of Sets if using this.
+8. Unidirectional one-to-many: Using @OneToMany only in the parent table is prohibited.
+9. In terms of efficiency: @ManyToOne > (Bi-directional => @ManyToOne + @OneToMany) > (Unidirectional => @OneToMany)
+Amongst the 3 the unidirectional is prohibited for its inefficiency.
+10. @OneToOne: 2 types =>
+    1. Annotate it on the child table only and make sure to use @JoinColumn and @MapsId along with @OneToOne
+    2. Annotate it on both the parent and the child which is called bidirectional. If using this byte code enhancements is a must.
+11. @ManyToOne: Use Sets to define the other entity. Do not use List.
+    For unidirectional I use Cascade persist and Cascade Merge.
+    If there are too many columns, and it is not possible to add a new column then create a new junction table using embedded ID.
+12. For issues indicated above instead of checking manually we can also use Hypersistence optimizer in our java spring-boot app.

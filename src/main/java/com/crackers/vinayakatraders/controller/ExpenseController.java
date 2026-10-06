@@ -12,6 +12,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.*;
+import java.util.function.Supplier;
 
 @RestController
 @RequestMapping("/admin/expenses")
@@ -32,12 +34,21 @@ public class ExpenseController {
     @PreAuthorize("hasAnyRole('ADMIN')")
     @GetMapping
     public ResponseEntity<AllExpensesResponseDto> getAllExpenses() {
-        List<ExpensesDto> expensesDto = this.expensesService.getAllExpenses().stream()
-                .map(exp -> new ExpensesDto(exp.getId(), exp.getReasonForExpense(), exp.getAmount()))
-                .toList();
-        Integer total = this.expensesService.sumOfAllExpenses();
-        AllExpensesResponseDto allExpensesResponseDto = new AllExpensesResponseDto(expensesDto, total);
-        return ResponseEntity.ok().body(allExpensesResponseDto);
+        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            Future<List<ExpensesDto>> expenses = executor.submit(() ->
+                    this.expensesService.getAllExpenses().stream()
+                            .map(exp -> new ExpensesDto(exp.getId(), exp.getReasonForExpense(), exp.getAmount()))
+                            .toList()
+            );
+
+            Future<Integer> total = executor.submit(this.expensesService::sumOfAllExpenses);
+
+            AllExpensesResponseDto response = new AllExpensesResponseDto(expenses.get(), total.get());
+
+            return ResponseEntity.ok().body(response);
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

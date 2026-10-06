@@ -14,10 +14,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class Role {
     @Id
-    @SequenceGenerator(name = "roles_id_seq", sequenceName = "roles_id_seq", allocationSize = 1)
+    @SequenceGenerator(name = "roles_id_seq", sequenceName = "roles_id_seq", allocationSize = 50)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "roles_id_seq")
-    @Column(name = "id", updatable = false)
-    private Long id;
+    private Short id;
 
     @Column(name = "name", nullable = false, unique = true, length = 50)
     private String name;

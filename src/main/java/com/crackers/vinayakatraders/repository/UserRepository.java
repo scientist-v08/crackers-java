@@ -16,19 +16,19 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
 
     @Query("""
-            SELECT new com.crackers.vinayakatraders.dto.LoginUserDetailsProjection(
-                u.email,
-                u.password,
-                r.id,
-                r.name,
-                rt.id,
-                rt.route,
-                rt.heading
-            )
-            FROM User u
-            JOIN Role r ON u.roleId = r.id
-            JOIN Routes rt ON rt.role = r.id
-            WHERE u.email = :email
-        """)
+        SELECT new com.crackers.vinayakatraders.dto.LoginUserDetailsProjection(
+            u.email,
+            u.password,
+            r.id,
+            r.name,
+            rt.id,
+            rt.route,
+            rt.heading
+        )
+        FROM User u
+        JOIN u.role r
+        JOIN Routes rt ON rt.role = r
+        WHERE u.email = :email
+    """)
     List<LoginUserDetailsProjection> findLoginDetailsByEmail(@Param("email") String email);
 }

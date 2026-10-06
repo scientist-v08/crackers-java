@@ -3,9 +3,9 @@ package com.crackers.vinayakatraders.dto;
 public record LoginUserDetailsProjection(
         String email,
         String password,
-        Long roleId,
+        Short roleId,
         String roleName,
-        Long routeId,
+        Short routeId,
         String route,
         String heading
 ) {}
