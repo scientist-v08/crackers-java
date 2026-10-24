@@ -1,6 +1,7 @@
 package com.crackers.vinayakatraders.controller;
 
 import com.crackers.vinayakatraders.dto.PriceListResponse;
+import com.crackers.vinayakatraders.dto.ProductsList;
 import com.crackers.vinayakatraders.entity.PriceList;
 import com.crackers.vinayakatraders.service.PriceListService;
 import lombok.AllArgsConstructor;
@@ -21,10 +22,9 @@ public class PriceListController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping
-    public ResponseEntity<List<PriceListResponse>> getAllPriceList() {
-        List<PriceList> obtainedPriceList = this.priceListService.getAllPriceList();
-        List<PriceListResponse> priceListResponse = obtainedPriceList.stream().map(opl -> new PriceListResponse(opl.getId(), opl.getItem(), opl.getPrice())).toList();
-        return ResponseEntity.ok(priceListResponse);
+    public ResponseEntity<List<ProductsList>> getAllPriceList() {
+        List<ProductsList> obtainedPriceList = this.priceListService.getAllPriceList();
+        return ResponseEntity.ok(obtainedPriceList);
     }
 
 }
