@@ -1,0 +1,3 @@
+DROP SEQUENCE IF EXISTS expenses_id_seq CASCADE;
+CREATE SEQUENCE IF NOT EXISTS expenses_id_seq INCREMENT BY 50 START WITH 1 OWNED BY expenses.id;
+ALTER TABLE expenses ALTER COLUMN id SET DEFAULT nextval('expenses_id_seq');

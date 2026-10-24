@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -82,9 +83,10 @@ public class AuthService {
             throw new BadCredentialsException("Invalid credentials. Incorrect password.");
         }
 
-        List<RouteResponse> routes = details.stream()
-                .map(r -> new RouteResponse(r.routeId(), r.route(), r.heading()))
-                .toList();
+        List<RouteResponse> routes = new java.util.ArrayList<>(details.stream()
+                .map(r -> new RouteResponse(r.routeId(), r.route(), r.heading(), r.roleName()))
+                .toList());
+        routes.sort(Comparator.comparing(RouteResponse::id));
 
         String token = jwtUtil.generateToken(first.email(), first.roleName());
 

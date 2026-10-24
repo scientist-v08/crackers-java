@@ -5,10 +5,7 @@ import com.crackers.vinayakatraders.dto.PreviewBillResponse;
 import com.crackers.vinayakatraders.service.BillService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,13 +24,15 @@ public class BillController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDisposition(
-                ContentDisposition.attachment()
+                ContentDisposition
+                        .attachment()
                         .filename(response.filename())
                         .build()
         );
         headers.setContentLength(response.file().length);
 
-        return ResponseEntity.ok()
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
                 .headers(headers)
                 .body(response.file());
     }

@@ -11,6 +11,7 @@ public record PreviewBillRequest(
         @NotBlank(message = "Mobile is a required field") @Pattern(regexp = "^[0-9]{10}$", message = "Mobile number must be exactly 10 digits") String mobile,
         Integer grandTotal,
         @NotEmpty List<BillItemsRequest> billItems,
+        @NotBlank(message = "Discount is a required field") String discount,
         Integer finalizedAmt
 ) {
 }

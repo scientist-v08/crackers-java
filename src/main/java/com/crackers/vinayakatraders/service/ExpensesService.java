@@ -22,12 +22,11 @@ public class ExpensesService {
         return this.expensesRepository.sumOfAmount();
     }
 
-    public Expenses addExpense(ExpenseRequestDto request) {
+    public void addExpense(ExpenseRequestDto request) {
         Expenses expenses = new Expenses();
         expenses.setReasonForExpense(request.reasonForExpense());
         expenses.setAmount(request.amount());
-
-        return this.expensesRepository.save(expenses);
+        this.expensesRepository.save(expenses);
     }
 
 }
