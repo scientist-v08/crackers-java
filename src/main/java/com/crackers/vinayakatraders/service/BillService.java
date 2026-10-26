@@ -4,27 +4,41 @@ import com.crackers.vinayakatraders.dto.BillItemsRequest;
 import com.crackers.vinayakatraders.dto.PreviewBillRequest;
 import com.crackers.vinayakatraders.dto.PreviewBillResponse;
 import com.crackers.vinayakatraders.dto.SubTotalGrandTotal;
+import com.crackers.vinayakatraders.entity.Billing;
+import com.crackers.vinayakatraders.entity.Purchase;
+import com.crackers.vinayakatraders.repository.BillingRepository;
+import com.crackers.vinayakatraders.repository.PurchaseRepository;
 import com.lowagie.text.*;
 import com.lowagie.text.Font;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 @Service
+@AllArgsConstructor
 public class BillService {
 
+    private final BillingRepository billingRepository;
+    private final PurchaseRepository purchaseRepository;
+
+    @Transactional(rollbackFor = Exception.class)
     public PreviewBillResponse generateBill(PreviewBillRequest request) {
         SubTotalGrandTotal calculations = validateBill(request);
+        this.saveToDb(request, calculations);
         byte[] pdfBytes = createPdf(request, calculations);
 
         String timestamp = LocalDateTime.now(ZoneId.of("Asia/Kolkata")).format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
@@ -64,6 +78,38 @@ public class BillService {
 
         // Return grand total
         return new SubTotalGrandTotal(grandTotal, values);
+    }
+
+    private void saveToDb(PreviewBillRequest bill, SubTotalGrandTotal calc) {
+        Integer finalAmt = 0;
+        if (bill.finalizedAmt() != null && bill.finalizedAmt() > 0) {
+            finalAmt = bill.finalizedAmt();
+        } else {
+            finalAmt = bill.grandTotal();
+        }
+        Billing billing = Billing.builder()
+                .user(bill.user())
+                .mobile(bill.mobile())
+                .grandTotal(BigDecimal.valueOf(calc.grandTotal()))
+                .finalizedAmt(finalAmt)
+                .build();
+        Billing savedBilling = this.billingRepository.save(billing);
+        int i = 0;
+        List<Purchase> purchases = new ArrayList<>();
+        for (BillItemsRequest req: bill.billItems()) {
+            Purchase newPurchase = Purchase.builder()
+                            .billing(savedBilling)
+                            .mobile(bill.mobile())
+                            .mrpOrNet(req.mrpOrNet())
+                            .item(req.item())
+                            .quantity(req.quantity())
+                            .discount(req.discount())
+                            .subTotal(BigDecimal.valueOf(calc.subtotals().get(i)))
+                            .build();
+            purchases.add(newPurchase);
+            i++;
+        }
+        this.purchaseRepository.saveAll(purchases);
     }
 
     private byte[] createPdf(PreviewBillRequest bill, SubTotalGrandTotal calc) {
