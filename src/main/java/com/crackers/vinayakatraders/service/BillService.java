@@ -10,6 +10,7 @@ import com.crackers.vinayakatraders.repository.BillingRepository;
 import com.crackers.vinayakatraders.repository.PurchaseRepository;
 import com.lowagie.text.*;
 import com.lowagie.text.Font;
+import com.lowagie.text.Image;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
@@ -27,6 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 @Service
 @AllArgsConstructor
@@ -38,8 +40,8 @@ public class BillService {
     @Transactional(rollbackFor = Exception.class)
     public PreviewBillResponse generateBill(PreviewBillRequest request) {
         SubTotalGrandTotal calculations = validateBill(request);
-        this.saveToDb(request, calculations);
-        byte[] pdfBytes = createPdf(request, calculations);
+        Long id = this.saveToDb(request, calculations);
+        byte[] pdfBytes = createPdf(request, calculations, id);
 
         String timestamp = LocalDateTime.now(ZoneId.of("Asia/Kolkata")).format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         String filename = "bill_preview_" + timestamp + ".pdf";
@@ -80,7 +82,7 @@ public class BillService {
         return new SubTotalGrandTotal(grandTotal, values);
     }
 
-    private void saveToDb(PreviewBillRequest bill, SubTotalGrandTotal calc) {
+    private Long saveToDb(PreviewBillRequest bill, SubTotalGrandTotal calc) {
         Integer finalAmt = 0;
         if (bill.finalizedAmt() != null && bill.finalizedAmt() > 0) {
             finalAmt = bill.finalizedAmt();
@@ -110,14 +112,34 @@ public class BillService {
             i++;
         }
         this.purchaseRepository.saveAll(purchases);
+        return savedBilling.getId();
     }
 
-    private byte[] createPdf(PreviewBillRequest bill, SubTotalGrandTotal calc) {
+    private byte[] createPdf(PreviewBillRequest bill, SubTotalGrandTotal calc, Long id) {
         float MM_TO_PT = 72f / 25.4f;
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
             Document document = new Document(PageSize.A4, 10 * MM_TO_PT, 10 * MM_TO_PT, 10 * MM_TO_PT, 10 * MM_TO_PT);
             PdfWriter.getInstance(document, byteArrayOutputStream);
             document.open();
+
+            try {
+                // Preferred: load from classpath (recommended for Spring Boot / production)
+                Image ganesha = Image.getInstance(
+                        Objects.requireNonNull(
+                                getClass().getClassLoader().getResource("assets/ganesha.png")
+                        )
+                );
+
+                float imgSize = 10 * MM_TO_PT;
+                ganesha.scaleAbsolute(imgSize, imgSize);
+                ganesha.setAlignment(Element.ALIGN_CENTER);
+                ganesha.setSpacingAfter(3 * MM_TO_PT);  // small gap before the title
+                document.add(ganesha);
+            } catch (Exception e) {
+                // Optional: log and continue without the image
+                // log.warn("Could not load ganesha.png", e);
+                throw new RuntimeException("Unable to load Ganesha", e);
+            }
 
             // Fonts
             Font titleFont = new Font(Font.HELVETICA, 16, Font.BOLD);
@@ -144,7 +166,7 @@ public class BillService {
             leftCell.setPadding(0);
             leftCell.addElement(new Paragraph("Customer: " + bill.user(), normalFont));
             leftCell.addElement(new Paragraph("Mobile: " + bill.mobile(), normalFont));
-            leftCell.addElement(new Paragraph("Bill ID: " + "NA", normalFont)); // or pass billId
+            leftCell.addElement(new Paragraph("Bill ID: " + id.toString(), normalFont));
             headerTable.addCell(leftCell);
 
             // Right - Terms

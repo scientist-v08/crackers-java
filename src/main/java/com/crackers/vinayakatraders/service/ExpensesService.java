@@ -1,6 +1,7 @@
 package com.crackers.vinayakatraders.service;
 
 import com.crackers.vinayakatraders.dto.ExpenseRequestDto;
+import com.crackers.vinayakatraders.dto.ExpensesDto;
 import com.crackers.vinayakatraders.entity.Expenses;
 import com.crackers.vinayakatraders.repository.ExpensesRepository;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,14 @@ public class ExpensesService {
 
     public Integer sumOfAllExpenses() {
         return this.expensesRepository.sumOfAmount();
+    }
+
+    public Integer computeSumOfAllExpenses(List<ExpensesDto> req) {
+        Integer total = 0;
+        for (ExpensesDto item: req) {
+            total += item.amount();
+        }
+        return total;
     }
 
     public void addExpense(ExpenseRequestDto request) {
