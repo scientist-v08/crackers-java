@@ -34,21 +34,12 @@ public class ExpenseController {
     @PreAuthorize("hasAnyRole('ADMIN')")
     @GetMapping
     public ResponseEntity<AllExpensesResponseDto> getAllExpenses() {
-        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            Future<List<ExpensesDto>> expenses = executor.submit(() ->
-                    this.expensesService.getAllExpenses().stream()
-                            .map(exp -> new ExpensesDto(exp.getId(), exp.getReasonForExpense(), exp.getAmount()))
-                            .toList()
-            );
-
-            Future<Integer> total = executor.submit(this.expensesService::sumOfAllExpenses);
-
-            AllExpensesResponseDto response = new AllExpensesResponseDto(expenses.get(), total.get());
-
-            return ResponseEntity.ok().body(response);
-        } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        List<ExpensesDto> expenses = this.expensesService.getAllExpenses().stream()
+                .map(exp -> new ExpensesDto(exp.getId(), exp.getReasonForExpense(), exp.getAmount()))
+                .toList();
+        Integer total = this.expensesService.computeSumOfAllExpenses(expenses);
+        AllExpensesResponseDto response = new AllExpensesResponseDto(expenses, total);
+        return ResponseEntity.ok().body(response);
     }
 
 }
