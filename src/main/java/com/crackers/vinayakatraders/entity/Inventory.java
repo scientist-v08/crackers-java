@@ -1,12 +1,7 @@
 package com.crackers.vinayakatraders.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.Table;
+import com.crackers.vinayakatraders.constants.InventoryState;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -36,8 +31,9 @@ public class Inventory {
     @Column(name = "brand_or_company", columnDefinition = "text")
     private String brandOrCompany;
 
+    @Enumerated(EnumType.ORDINAL)
     @Column(name = "state", nullable = false)
-    private Short state;
+    private InventoryState state;
 
     @Column(name = "item", columnDefinition = "text")
     private String item;
@@ -57,7 +53,7 @@ public class Inventory {
     @Column(name = "sub_total", nullable = false)
     private Integer subTotal;
 
-    public Inventory(String brandOrCompany, Short state, String item, Integer numOfBoxes,
+    public Inventory(String brandOrCompany, InventoryState state, String item, Integer numOfBoxes,
                      Integer numOfCartons, Integer pricePerCarton, Integer subTotal) {
         this.brandOrCompany = brandOrCompany;
         this.state = state;

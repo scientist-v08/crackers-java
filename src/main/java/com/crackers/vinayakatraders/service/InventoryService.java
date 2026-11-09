@@ -5,7 +5,7 @@ import com.crackers.vinayakatraders.dto.InventoryListResponse;
 import com.crackers.vinayakatraders.dto.InventoryRequest;
 import com.crackers.vinayakatraders.dto.UpdateInventoryRequest;
 import com.crackers.vinayakatraders.entity.Inventory;
-import com.crackers.vinayakatraders.entity.InventoryState;
+import com.crackers.vinayakatraders.constants.InventoryState;
 import com.crackers.vinayakatraders.exception.InvalidInventoryStateTransitionException;
 import com.crackers.vinayakatraders.exception.InventoryNotFoundException;
 import com.crackers.vinayakatraders.repository.InventoryRepository;
@@ -31,7 +31,7 @@ public class InventoryService {
     public void addItem(InventoryRequest request) {
         // Use checked arithmetic to avoid silently overflowing a Java int subTotal.
         int subtotal = Math.multiplyExact(request.pricePerCarton(), request.numOfCartons());
-        short stateCode = InventoryState.fromApiValue(request.state()).code();
+        InventoryState stateCode = InventoryState.fromApiValue(request.state());
         repository.save(new Inventory(
                 request.brandOrCompany(),
                 stateCode,
@@ -44,8 +44,8 @@ public class InventoryService {
     }
 
     public InventoryListResponse getInventory(int pageNumber, int pageSize, String title, String stateValue) {
-        Short state = (stateValue == null || stateValue.isBlank())
-                ? null : InventoryState.fromApiValue(stateValue).code();
+        InventoryState state = (stateValue == null || stateValue.isBlank())
+                ? null : InventoryState.fromApiValue(stateValue);
         int safePage = pageNumber <= 0 ? 0 : pageNumber - 1;
         int safeSize = pageSize <= 0 || pageSize > 100 ? 10 : pageSize;
         String safeTitle = title == null ? "" : title.trim();
@@ -79,7 +79,7 @@ public class InventoryService {
         Inventory existing = repository.findById(request.id())
                 .orElseThrow(InventoryNotFoundException::new);
 
-        InventoryState currentState = InventoryState.fromCode(existing.getState());
+        InventoryState currentState = existing.getState();
 
         if (currentState != InventoryState.ORDERED && currentState != InventoryState.RECEIVED) {
             throw new InvalidInventoryStateTransitionException();
@@ -96,7 +96,7 @@ public class InventoryService {
 
         if (existing.getNumOfCartons() == requestedCartons) {
             // Full match: update the existing record only.
-            existing.setState(nextState.code());
+            existing.setState(nextState);
             existing.setSubTotal(
                     existing.getNumOfCartons() * existing.getPricePerCarton());
 
@@ -115,7 +115,7 @@ public class InventoryService {
 
             Inventory newRecord = new Inventory(
                     request.brandOrCompany(),
-                    nextState.code(),
+                    nextState,
                     request.item(),
                     request.numOfBoxes(),
                     requestedCartons,

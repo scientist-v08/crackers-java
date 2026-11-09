@@ -1,5 +1,6 @@
 package com.crackers.vinayakatraders.repository;
 
+import com.crackers.vinayakatraders.constants.InventoryState;
 import com.crackers.vinayakatraders.entity.Inventory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,12 +21,12 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
             WHERE (:state IS NULL OR i.state = :state)
               AND (:title IS NULL OR :title = '' OR LOWER(COALESCE(i.item, '')) LIKE LOWER(CONCAT('%', :title, '%')))
             """)
-    Page<Inventory> findFiltered(@Param("state") Short state, @Param("title") String title, Pageable pageable);
+    Page<Inventory> findFiltered(@Param("state") InventoryState state, @Param("title") String title, Pageable pageable);
 
     @Query("""
             SELECT COALESCE(SUM(i.subTotal), 0) FROM Inventory i
             WHERE (:state IS NULL OR i.state = :state)
               AND (:title IS NULL OR :title = '' OR LOWER(COALESCE(i.item, '')) LIKE LOWER(CONCAT('%', :title, '%')))
             """)
-    Long sumSubtotalFiltered(@Param("state") Short state, @Param("title") String title);
+    Long sumSubtotalFiltered(@Param("state") InventoryState state, @Param("title") String title);
 }

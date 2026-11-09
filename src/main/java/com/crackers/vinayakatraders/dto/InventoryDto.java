@@ -1,7 +1,6 @@
 package com.crackers.vinayakatraders.dto;
 
 import com.crackers.vinayakatraders.entity.Inventory;
-import com.crackers.vinayakatraders.entity.InventoryState;
 
 public record InventoryDto(
         Long id,
@@ -14,11 +13,10 @@ public record InventoryDto(
         Integer subTotal
 ) {
     public static InventoryDto from(Inventory inventory) {
-        String stateName = InventoryState.fromCode(inventory.getState()).apiValue();
         return new InventoryDto(
                 inventory.getId(),
                 inventory.getBrandOrCompany(),
-                stateName,
+                inventory.getState().apiValue(),
                 inventory.getItem(),
                 inventory.getNumOfBoxes(),
                 inventory.getNumOfCartons(),
